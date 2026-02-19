@@ -8,11 +8,11 @@ Think of it as your own open-source version of Shazam, running locally with a St
 
 ## ✨ Key Features
 
-* **Universal Indexing:** Build your fingerprint database from YouTube playlists or your local music library (MP3, WAV, M4A).
-* **Real-Time Identification:** Identifies tracks within seconds using just a noisy microphone recording.
-* **Visual Analysis:** Provides live Constellation Maps (time-frequency plots) to visualize what the algorithm "sees."
-* **Noise Resistant:** Uses a 2D maximum filter to ignore background room noise and focus on dominant musical peaks. 
-* **High Precision:** Implements a 64-bit hashing strategy to minimize false positives.
+- **Band-Aware Peak Extraction** — Splits the spectrogram into fixed frequency bands and keeps only the strongest peaks per frame.
+- **Adaptive Noise Filtering** — Uses median-based thresholds to ignore weak or noisy frequency components.
+- **Compact Bit-Packed Hashing** — Encodes `(f1, f2, Δt)` relationships between peak pairs into a single integer hash for fast lookup.
+- **Temporal Voting Matcher** — Identifies tracks by clustering consistent time offsets between matching fingerprints.
+- **Lightweight Audio Processing** — Runs at 11 kHz mono with a small STFT, keeping computation fast and efficient.
 ---
 
 ## 🛠️ Installation

@@ -10,4 +10,7 @@ venv/
 .DS_Store
 assets/
 downloads/
-.cache/
+benchmark.py
+build_db.py
+benchmark_songs/
+database.pkl

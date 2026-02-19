@@ -11,7 +11,7 @@ from backbone import compute_spec, extract_peaks, generate_fingerprint, find_mat
 from yt import download_audio_from_yt
 
 st.set_page_config(page_title="Audio Recognizer", page_icon="🎵", layout="wide")
-st.title("🎵 Universal Audio Fingerprinter")
+st.title("🎵 Tuner")
 
 # --- SESSION STATE INITIALIZATION ---
 if 'master_db' not in st.session_state:
@@ -23,7 +23,7 @@ if 'db_peaks' not in st.session_state:
 
 # --- SIDEBAR: DATABASE BUILDING ---
 with st.sidebar:
-    st.header("1. Build Database")
+    st.header("Build Database")
     
     # Option A: YouTube
     playlist_url = st.text_input("YouTube URL (Video or Playlist)")
@@ -63,19 +63,19 @@ with st.sidebar:
     st.write(f"### Indexed Library ({len(st.session_state.indexed_songs)})")
     for song in st.session_state.indexed_songs:
         st.caption(f"✅ {song}")
-        if song in st.session_state.db_peaks:
-            with st.expander(f"📊 View Peaks: {song[:20]}..."):
-                fig_db = plot_constellation(st.session_state.db_peaks[song], title=song)
-                st.pyplot(fig_db)
+        # if song in st.session_state.db_peaks:
+        #     with st.expander(f"📊 View Peaks: {song[:20]}..."):
+        #         fig_db = plot_constellation(st.session_state.db_peaks[song], title=song)
+        #         st.pyplot(fig_db)
 
 # --- MAIN AREA: IDENTIFICATION ---
-st.header("2. Identify Audio")
+st.header(" Identify Audio")
 tab1, tab2 = st.tabs(["🎙️ Record Snippet", "📁 Upload Query File"])
-
+# tab1, tab2, tab3 = st.tabs(["🎙️ Record Snippet", "📁 Upload Query File", "🧪 Simulation Lab"])
 y_query = None
 
 with tab1:
-    audio_record = mic_recorder(start_prompt="Start Recording", stop_prompt="Stop & Process", key='recorder')
+    audio_record = mic_recorder(start_prompt="Start Recording", stop_prompt="Stop & Process (> 15 sec)", key='recorder')
     if audio_record:
         # Safely convert browser audio to a format Librosa can read
         audio_bytes = io.BytesIO(audio_record['bytes'])
@@ -89,7 +89,52 @@ with tab2:
     query_file = st.file_uploader("Upload snippet to identify", type=['wav', 'mp3', 'm4a'], key="query_upload")
     if query_file:
         y_query, _ = librosa.load(query_file, sr=SR, mono=True)
+# with tab3:
+#     st.write("### 🎧 Real-World Simulator")
+#     st.caption("Upload a clean song to hear what it sounds like after the 'Phone Mic' & 'Reverb' filters.")
+    
+#     test_file = st.file_uploader("Upload clean audio", type=['wav', 'mp3'], key="sim_upload")
+    
+#     if test_file:
+#         # 1. Load the original
+#         y_clean, _ = librosa.load(test_file, sr=SR, mono=True)
+        
+#         # 2. Apply the simulation (Make sure you import this function from benchmark.py!)
+#         # You might need to move the simulate_real_world_recording function into backbone.py 
+#         # or import it here. For now, I'll paste the logic briefly:
+        
+#         from scipy.signal import butter, lfilter, convolve
+        
+#         def fast_simulate(y, sr):
+#             # Bandpass
+#             nyquist = 0.5 * sr
+#             b, a = butter(4, [200/nyquist, 5000/nyquist], btype='band')
+#             y = lfilter(b, a, y)
+#             # Reverb
+#             impulse = np.zeros(int(0.05*sr)+1)
+#             impulse[0] = 1; impulse[-1] = 0.4
+#             y = convolve(y, impulse, mode='same')
+#             # Noise
+#             y = y + np.random.normal(0, 0.005, len(y))
+#             return np.clip(y, -1.0, 1.0)
 
+#         with st.spinner("Applying filters..."):
+#             y_dirty = fast_simulate(y_clean, SR)
+
+#         col1, col2 = st.columns(2)
+#         with col1:
+#             st.write("**Original (Clean)**")
+#             st.audio(test_file)
+#         with col2:
+#             st.write("**Simulated (Dirty)**")
+#             st.audio(y_dirty, sample_rate=SR)
+            
+#         # Optional: Show the difference in peaks
+#         if st.checkbox("Show Peak Comparison"):
+#             from backbone import extract_peaks, compute_spec, plot_constellation
+#             st.write("Notice how the 'Dirty' version loses the sub-bass (bottom) and air (top)!")
+#             st.pyplot(plot_constellation(extract_peaks(compute_spec(y_clean)), "Clean Peaks"))
+#             st.pyplot(plot_constellation(extract_peaks(compute_spec(y_dirty)), "Dirty Peaks"))
 # --- MATCHING ENGINE ---
 if y_query is not None:
     y_query = y_query.astype(np.float32)
@@ -97,16 +142,16 @@ if y_query is not None:
         peaks_rec = extract_peaks(compute_spec(y_query))
         
         # Plot the Query Peaks
-        with st.expander("📊 View Recording Peaks", expanded=True):
-            fig_rec = plot_constellation(peaks_rec, title="Recorded Audio Peaks")
-            st.pyplot(fig_rec)
+        # with st.expander("📊 View Recording Peaks", expanded=True):
+        #     fig_rec = plot_constellation(peaks_rec, title="Recorded Audio Peaks")
+        #     st.pyplot(fig_rec)
 
         fingerprints_rec = generate_fingerprint(peaks_rec, "QUERY")
         matches = find_match(st.session_state.master_db, fingerprints_rec)
 
     if matches:
         st.balloons()
-        st.subheader("Match Found! 🏆")
+        st.subheader("Match Found! 🏆 It has to be one of them !")
         for song_id, score in matches[:3]:
             col1, col2 = st.columns([3, 1])
             with col1:

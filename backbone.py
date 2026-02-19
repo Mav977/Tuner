@@ -28,8 +28,8 @@ def extract_peaks(spectrogram, sr=SR, n_fft=N_FFT, hop_length=HOP_LENGTH):
     spectrogram_db = librosa.amplitude_to_db(spectrogram, ref=np.max)
     
     MIN_AMP = -60
-    PEAK_DELTA = 15 
-    MAX_PEAKS_PER_FRAME = 10 # Prevent noise from overcrowding the map
+    PEAK_DELTA = 15
+    MAX_PEAKS_PER_FRAME = 60 # Prevent noise from overcrowding the map
     peaks = []
 
     for t in range(time_frames):
